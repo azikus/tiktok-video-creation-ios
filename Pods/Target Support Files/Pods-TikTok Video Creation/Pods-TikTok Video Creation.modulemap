@@ -1,0 +1,6 @@
+framework module Pods_TikTok_Video_Creation {
+  umbrella header "Pods-TikTok Video Creation-umbrella.h"
+
+  export *
+  module * { export * }
+}
