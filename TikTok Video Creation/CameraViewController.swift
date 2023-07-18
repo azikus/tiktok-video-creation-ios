@@ -15,15 +15,13 @@ class CameraViewController: UIViewController {
     struct SavedAsset {
         let asset: AVAsset
         let outputFileURLs: URL
+        let isFullVideo: Bool
     }
     
     var savedAssets: [SavedAsset] = []
-    var assetsReadyToMerge: [AVAsset] = []
-    
     var assets: [AVAsset] {
         savedAssets.map { $0.asset }
     }
-    
     var outputFileURLs: [URL] {
         savedAssets.map { $0.outputFileURLs }
     }
@@ -141,6 +139,17 @@ class CameraViewController: UIViewController {
         button.alpha = 0
         return button
     }()
+    
+    lazy var activityIndicator: UIActivityIndicatorView =  {
+        let activityIndicator = UIActivityIndicatorView(style: .large)
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        activityIndicator.color = .appWhite
+        view.addSubview(activityIndicator)
+        activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        
+        return activityIndicator
+    }()
 
     init() { super.init(nibName: nil, bundle: nil) }
     
@@ -150,7 +159,9 @@ class CameraViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         addSubviews()
+        
         view.backgroundColor = .black
         view.addGestureRecognizer(pinchGestureRecognizer)
     }
@@ -338,55 +349,73 @@ class CameraViewController: UIViewController {
         startCaptureSession()
     }
 }
-//NESTANE I DODE?
+
 // MARK: - AVCaptureFileOutputRecordingDelegate
 extension CameraViewController: AVCaptureFileOutputRecordingDelegate {
     func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
         if let error = error {
             presentError(message: error.localizedDescription)
-            return
+        } else {
+            let asset = AVAsset(url: outputFileURL)
+            if asset.containsVideoAudioTracks {
+                savedAssets.append(SavedAsset(asset: asset, outputFileURLs: outputFileURL, isFullVideo: !shouldFlipAfterStopRecording))
+                updateButtons()
+            } else {
+                presentNativeMessage("Could not capture last clip! Please try again!")
+            }
         }
-        let asset = AVAsset(url: outputFileURL)
-        assetsReadyToMerge.append(asset)
-            
+        
         if shouldFlipAfterStopRecording {
             shouldFlipAfterStopRecording = false
             flip()
-            return
-        }
-            
-        if let last = savedAssets.last?.asset {
-            assetsReadyToMerge.insert(last, at: 0)
-        }
-         
-        confirmButton.alpha = 0
-        VideoHelper.mergeAndExport(assets: assetsReadyToMerge) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .error(let error):
-                self.presentError(message: error)
-            case .sucess(let session):
-                guard session.status == AVAssetExportSession.Status.completed,
-                      let outputURL = session.outputURL else {
-                            self.presentNativeMessage("Please try again", title: "Something went wrong!", completion: nil)
-                            return
-                      }
-                let newMergedAsset = AVAsset(url: outputURL)
-                guard newMergedAsset.containsVideoAudioTracks else {
-                    self.presentNativeMessage("Could not capture last clip! Please try again!")
-                    return
-                }
-                self.savedAssets.append(SavedAsset(asset: newMergedAsset, outputFileURLs: outputURL))
-                self.assetsReadyToMerge = []
-                self.updateButtons()
-                self.confirmButton.alpha = self.totalDuration.seconds > 4 ? 1 : 0
-            }
         }
     }
     
     func finish() {
-        guard let lastMegredURL = outputFileURLs.last else { return }
-        let cameraPreviewViewController = CameraPreviewViewController(videoURL: lastMegredURL)
+        confirmButton.isEnabled = false
+        if outputFileURLs.count == 1 {
+            finish(outputUrl: outputFileURLs[0])
+            
+            return
+        }
+        
+        activityIndicator.startAnimating()
+        VideoHelper.mergeAndExport(assets: assets) {[weak self] result in
+            switch result {
+            case .error(let error):
+                self?.handleMergeError(error)
+            case .sucess(let session):
+                DispatchQueue.main.async {
+                    self?.activityIndicator.stopAnimating()
+                }
+                guard let self = self,
+                      session.status == AVAssetExportSession.Status.completed,
+                      let outputURL = session.outputURL
+                else {
+                    self?.presentNativeMessage("Please try again", title: "Something went wrong!", completion: nil)
+                    return
+                }
+                self.finish(outputUrl: outputURL)
+            }
+        }
+    }
+    
+    func handleMergeError(_ errorString: String) {
+        let alert = UIAlertController(title: "Error",
+                                      message: errorString,
+                                      preferredStyle: .alert)
+        
+        let cancelButton = UIAlertAction(title: "OK", style: .cancel, handler: nil)
+        alert.addAction(cancelButton)
+        DispatchQueue.main.async {
+            self.activityIndicator.stopAnimating()
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    func finish(outputUrl: URL) {
+        confirmButton.isEnabled = true
+        let cameraPreviewViewController = CameraPreviewViewController(videoURL: outputUrl)
         self.navigationController?.pushViewController(cameraPreviewViewController, animated: true)
     }
 }
@@ -425,9 +454,9 @@ private extension CameraViewController {
             captureSession.addInput(frontCameraInput)
             
             self.currentCameraPosition = .front
-        } else {
-            throw CameraControllerError.invalidOperation
         }
+        
+        else { throw CameraControllerError.invalidOperation }
     }
     
     func switchToRearCamera() throws {
@@ -445,9 +474,9 @@ private extension CameraViewController {
             captureSession.addInput(rearCameraInput)
             
             self.currentCameraPosition = .rear
-        } else {
-            throw CameraControllerError.invalidOperation
         }
+        
+        else { throw CameraControllerError.invalidOperation }
     }
     
     func recordVideo() {
@@ -455,7 +484,7 @@ private extension CameraViewController {
             return
         }
         cameraProgressView.resume()
-        let filename = "output-\(assets.count + assetsReadyToMerge.count).mov"
+        let filename = "output-\(assets.count).mov"
         let temporaryFilepathDirectory = FileManager.default.temporaryDirectory
         let videoOutputURL = temporaryFilepathDirectory.appendingPathComponent(filename)
         do {
@@ -482,10 +511,11 @@ private extension CameraViewController {
     
     func updateButtons() {
         if isRecording {
-            deleteButton.alpha = 0
             confirmButton.alpha = 0
+            deleteButton.alpha = 0
             return
         }
+        confirmButton.alpha = totalDuration.seconds > 4 ? 1 : 0
         deleteButton.alpha = assets.isEmpty ? 0 : 1
     }
     
@@ -644,8 +674,13 @@ private extension CameraViewController {
         let confirmButton = UIAlertAction(title: "Discard", style: .default) { [weak self] _ in
             guard let self = self else { return }
             
-            self.savedAssets = self.savedAssets.dropLast()
-            self.confirmButton.alpha = self.assets.isEmpty ? 0 : 1
+            self.savedAssets = self.savedAssets
+                .reversed()
+                .enumerated()
+                .drop(while: { $0.offset == 0 || !$0.element.isFullVideo})
+                .map { $0.element }
+                .reversed()
+                        
             self.updateButtons()
             if self.assets.isEmpty {
                 self.cameraProgressView.reset()
@@ -654,6 +689,7 @@ private extension CameraViewController {
             }
             self.recordButton.alpha = 1
             self.recordButton.isUserInteractionEnabled = true
+            
         }
         
         alert.addAction(confirmButton)
@@ -680,3 +716,4 @@ extension CameraViewController: CameraProgressViewDelegate {
         recordButton.isUserInteractionEnabled = false
     }
 }
+
