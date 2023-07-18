@@ -153,7 +153,6 @@
 			children = (
 				34DC910B29B0CB49003DB731 /* AppDelegate.swift */,
 				34DC911629B0CB4A003DB731 /* LaunchScreen.storyboard */,
-				34DC911929B0CB4A003DB731 /* Info.plist */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -195,6 +194,7 @@
 				3445B2A929B0D28000548967 /* CameraViewController.swift */,
 				3445B2AA29B0D28000548967 /* PreviewView.swift */,
 				3445B2B229B0D62E00548967 /* VideoHelper.swift */,
+				34DC911929B0CB4A003DB731 /* Info.plist */,
 			);
 			path = "TikTok Video Creation";
 			sourceTree = "<group>";
