@@ -148,6 +148,25 @@
 			path = UIKit;
 			sourceTree = "<group>";
 		};
+		34C726CB2A669EC900471F85 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				34DC910B29B0CB49003DB731 /* AppDelegate.swift */,
+				34DC911629B0CB4A003DB731 /* LaunchScreen.storyboard */,
+				34DC911929B0CB4A003DB731 /* Info.plist */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		34C726CC2A669F5D00471F85 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				34DC911429B0CB4A003DB731 /* Assets.xcassets */,
+				34A221A629B0DA4E008FFEE6 /* Extensions */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
 		34DC90FF29B0CB49003DB731 = {
 			isa = PBXGroup;
 			children = (
@@ -169,16 +188,13 @@
 		34DC910A29B0CB49003DB731 /* TikTok Video Creation */ = {
 			isa = PBXGroup;
 			children = (
-				34DC910B29B0CB49003DB731 /* AppDelegate.swift */,
+				34C726CB2A669EC900471F85 /* App */,
+				34C726CC2A669F5D00471F85 /* Common */,
 				3445B2AB29B0D28000548967 /* CameraPreviewViewController.swift */,
 				3445B2A829B0D28000548967 /* CameraProgressView.swift */,
 				3445B2A929B0D28000548967 /* CameraViewController.swift */,
 				3445B2AA29B0D28000548967 /* PreviewView.swift */,
-				34DC911429B0CB4A003DB731 /* Assets.xcassets */,
-				34DC911629B0CB4A003DB731 /* LaunchScreen.storyboard */,
-				34DC911929B0CB4A003DB731 /* Info.plist */,
 				3445B2B229B0D62E00548967 /* VideoHelper.swift */,
-				34A221A629B0DA4E008FFEE6 /* Extensions */,
 			);
 			path = "TikTok Video Creation";
 			sourceTree = "<group>";
