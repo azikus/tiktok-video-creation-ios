@@ -4,9 +4,9 @@
 2. [Features](Features)
 3. [Requirements](Requirements)
 4. [Installation](Installation)
-5. [Usage](Usage)
+5. [Usage](#usage)
 6. [How it Works](How-it-Works)
-7. [License](License)
+7. [License](#license)
 
 ## Description
 
