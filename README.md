@@ -1,4 +1,14 @@
 # TikTok-like Video Capture Sample App for iOS
+## Table of Contents
+1. [Description](Description)
+2. [Features](Features)
+3. [Requirements](Requirements)
+4. [Installation](Installation)
+5. [Usage](Usage)
+6. [How it Works](How-it-Works)
+7. [License](License)
+
+## Description
 
 [Blog Link](https://medium.com/azikus)
 
