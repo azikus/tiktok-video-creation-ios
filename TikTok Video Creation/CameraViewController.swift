@@ -136,7 +136,7 @@ class CameraViewController: UIViewController {
     lazy var confirmButton: UIButton = {
         let button = UIButton(type: .system)
         button.tintColor = .appWhite
-        button.setImage(getSystemImage(name: "chevron.right.2", size: 22), for: .normal)
+        button.setImage(getSystemImage(name: "chevron.right", size: 22), for: .normal)
         button.addTarget(self, action: #selector(didTapConfirmButton), for: .touchUpInside)
         button.alpha = 0
         return button

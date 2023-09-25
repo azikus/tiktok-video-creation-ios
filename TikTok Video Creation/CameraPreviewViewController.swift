@@ -30,7 +30,7 @@ class CameraPreviewViewController: UIViewController {
     private lazy var backButton: UIButton = {
         let button = UIButton(type: .system)
         button.tintColor = .appWhite
-        button.setImage(getSystemImage(name: "chevron.left.2", size: 22), for: .normal)
+        button.setImage(getSystemImage(name: "chevron.left", size: 22), for: .normal)
         button.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
         return button
     }()
