@@ -12,7 +12,7 @@
 
 [Blog Link](https://medium.com/@antonio.griparic/e5f2b27c4355)
 
-This repository contains a sample iOS app that demonstrates how to create a video capture feature similar to TikTok. The app utilizes the device's camera to capture short videos and provides a user interface similar to the one found in TikTok for a seamless experience.
+This repository contains a sample iOS app that demonstrates how to create a video capture feature similar to TikTok.
 
 In branch `background-merge` You can find the implementation that merges videos in the background.
 
